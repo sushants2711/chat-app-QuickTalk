@@ -4,7 +4,7 @@ import {
   internalServerErrorResponse,
   validationErrorResponse,
 } from "../../utils/sendResponse/response.handler.js";
-import { nameSchemaValidation } from "../../schemaValidation/name/name.validation";
+import { nameSchemaValidation } from "../../schemaValidation/name/name.validation.js";
 import { emailSchemaValidation } from "../../schemaValidation/email/email.validation.js";
 import { passwordSchemaValidation } from "../../schemaValidation/password/password.validation.js";
 import { otpSchemaValidation } from "../../schemaValidation/otp/otp.validation.js";
