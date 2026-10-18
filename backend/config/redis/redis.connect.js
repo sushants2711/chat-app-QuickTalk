@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import { REDIS_URI } from "./constant.js";
+import { REDIS_URI } from "../constant.js";
 
 const redisClient = createClient({
   url: REDIS_URI,

@@ -9,6 +9,10 @@ export const validateEnv = () => {
     "REDIS_URI",
     "NODE_ENV",
     "ALLOWED_ORIGINS",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASS"
   ];
 
   const missingVars = requiredEnvVars.filter((curr) => !process.env[curr]);
