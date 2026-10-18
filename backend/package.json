@@ -9,11 +9,12 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "prepare": "husky || true",
+    "prepare": "cd .. && husky .husky || true",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check-all": "npm run format:check && npm run lint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -37,6 +38,7 @@
   "devDependencies": {
     "eslint": "^9.39.5",
     "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "nodemon": "^3.1.14",
     "prettier": "^3.9.10"
   }
