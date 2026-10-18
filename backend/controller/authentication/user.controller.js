@@ -44,8 +44,8 @@
 // // @route: POST /api/v1/user/login
 // // @access: Public
 
-// // @desc: verify a user
-// // @route: POST /api/v1/user/verify-user
+// // @desc: verify user otp
+// // @route: POST /api/v1/user/verify-otp
 // // @access: Public
 
 // // @desc: Logout a user

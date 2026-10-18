@@ -46,26 +46,19 @@ export const notFoundResponse = (res, message = "Resource not found") => {
   });
 };
 
-export const validationErrorResponse = (
-  res,
-  message = "Validation failed",
-  error = null,
-) => {
+export const validationErrorResponse = (res, message = "Validation failed") => {
   return res.status(422).json({
     success: false,
     message,
-    error,
   });
 };
 
 export const internalServerErrorResponse = (
   res,
   message = "Internal Server Error",
-  error = null,
 ) => {
   return res.status(500).json({
     success: false,
     message,
-    error,
   });
 };
