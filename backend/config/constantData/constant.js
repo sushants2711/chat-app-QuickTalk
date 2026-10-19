@@ -11,3 +11,6 @@ export const SMTP_PORT = process.env.SMTP_PORT;
 export const SMTP_USER = process.env.SMTP_USER;
 export const SMTP_PASS = process.env.SMTP_PASS;
 export const COOKIE_MAX_AGE = process.env.COOKIE_MAX_AGE;
+export const JWT_TOKEN = process.env.JWT_TOKEN;
+export const COOKIE_NAME = process.env.COOKIE_NAME;
+export const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
