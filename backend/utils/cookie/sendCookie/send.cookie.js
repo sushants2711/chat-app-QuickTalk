@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "../../../config/constantData/constant.js";
 import { internalServerErrorResponse } from "../../sendResponse/response.handler.js";
+import { generateToken } from "../../token/jwt.token.js";
 import { cookieOptionsSetting } from "../cookieConf/cookie.option.js";
-import { generateToken } from "../cookieConf/jwt.token.js";
 
 export const sendCookieToUser = async (userId, res) => {
   try {
