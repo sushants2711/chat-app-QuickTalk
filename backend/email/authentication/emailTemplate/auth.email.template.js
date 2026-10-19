@@ -167,13 +167,24 @@ export const getAccountDeletionSuccessEmailTemplate = (username, email) =>
         `,
   });
 
-export const getAccountRestoreEmailTemplate = (username, email) =>
+export const getAccountRestoreOtpEmailTemplate = (username, email, otp) =>
+  baseLayout({
+    title: "Restore your account",
+    heading: `Hi ${escapeHtml(username)}, restore your account`,
+    content: `
+              <p style="margin:0 0 8px;">We received a request to restore your ${APP_NAME} account linked to <strong>${escapeHtml(email)}</strong>. Enter the code below to confirm and get your account back.</p>
+              ${otpBlock(otp)}
+              ${noticeBlock("If you didn't request this, ignore this email. Your account will stay deleted.", COLORS.danger)}
+          `,
+  });
+
+export const getAccountRestoreSuccessEmailTemplate = (username, email) =>
   baseLayout({
     title: "Account restored",
     heading: `Welcome back, ${escapeHtml(username)}! 🎉`,
     content: `
             <p style="margin:0 0 12px;">Your ${APP_NAME} account <strong>${escapeHtml(email)}</strong> has been restored successfully.</p>
-            <p style="margin:0;">You can log in again and pick up your conversations where you left off.</p>
+            <p style="margin:0;">Your profile and conversations are back, so you can log in and continue where you left off.</p>
             ${buttonBlock("Log in to QuickTalk", CLIENT_URL)}
             ${noticeBlock("If you didn't request this restoration, please reset your password and contact our support team right away.", COLORS.danger)}
         `,
