@@ -13,6 +13,15 @@ export const validateEnv = () => {
     "SMTP_PORT",
     "SMTP_USER",
     "SMTP_PASS",
+    "SMTP_NAME",
+    "COOKIE_MAX_AGE",
+    "JWT_TOKEN",
+    "COOKIE_NAME",
+    "JWT_EXPIRES_IN",
+    "TOKEN_NAME",
+    "CLIENT_URL",
+    "APP_NAME",
+    "OTP_EXPIRY_MINUTES",
   ];
 
   const missingVars = requiredEnvVars.filter((curr) => !process.env[curr]);
