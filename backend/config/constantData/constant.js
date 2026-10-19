@@ -14,3 +14,4 @@ export const COOKIE_MAX_AGE = process.env.COOKIE_MAX_AGE;
 export const JWT_TOKEN = process.env.JWT_TOKEN;
 export const COOKIE_NAME = process.env.COOKIE_NAME;
 export const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
+export const TOKEN_NAME = process.env.TOKEN_NAME;
