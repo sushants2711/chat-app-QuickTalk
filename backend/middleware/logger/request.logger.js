@@ -33,10 +33,20 @@ export const requestLogger = (req, res, next) => {
     geo?.country ||
     (clientIp === "127.0.0.1" || clientIp === "::1" ? "Local" : "Unknown");
 
-  // 2. OS and Device from User-Agent
+  // 2. OS, Device, and Browser from User-Agent
   const parser = new UAParser(req.headers["user-agent"] || "");
   const os = parser.getOS().name || "Unknown";
   const device = parser.getDevice().type || "desktop";
+  const browser = parser.getBrowser().name || "Unknown";
+
+  // Attach client info to req object so downstream controllers can use it directly
+  req.clientInfo = {
+    ip: clientIp,
+    country,
+    device,
+    os,
+    browser,
+  };
 
   // 3. Capture response message from res.json()
   let responseMessage = null;

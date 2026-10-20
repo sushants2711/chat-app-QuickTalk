@@ -1,6 +1,6 @@
+import userModel from "../../model/authentication/user.model.js";
 import { TOKEN_NAME } from "../../config/constantData/constant.js";
 import { sendSignupVerificationEmail } from "../../email/authentication/sendEmail/send.email.js";
-import userModel from "../../model/authentication/user.model.js";
 import { checkOTPLimit } from "../../redis/authentication/check.otp.limit.js";
 import { storeOTP } from "../../redis/authentication/check.store.otp.js";
 import { increaseOTPCount } from "../../redis/authentication/increase.otp.limit.js";
@@ -14,6 +14,7 @@ import {
   internalServerErrorResponse,
   successResponse,
 } from "../../utils/sendResponse/response.handler.js";
+import { saveOrUpdateSignupSession } from "../session/session.controller.js";
 
 // @desc: Register a new user
 // @route: POST /api/v1/user/signup
@@ -81,6 +82,9 @@ export const signupController = async (req, res) => {
 
         const savedExistingUser = await userExist.save();
 
+        // Record or update session data for existing unverified user
+        await saveOrUpdateSignupSession(savedExistingUser._id, req);
+
         // store OTP for 5 minutes
         await storeOTP(email, otp);
 
@@ -146,6 +150,9 @@ export const signupController = async (req, res) => {
     if (!savedNewUser) {
       return badRequestResponse(res, "Error Occured While Signing Up");
     }
+
+    // Record session data for brand new user
+    await saveOrUpdateSignupSession(savedNewUser._id, req);
 
     // store OTP for 5 minutes
     await storeOTP(email, otp);

@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true, minimize: true },
 );
 
 // userSchema.index({ email: 1 });

@@ -107,3 +107,30 @@ export const getSessionAggregateController = async (req, res) => {
     );
   }
 };
+
+// desc - save or update signup session
+// helper function use at the time of signup to store the user location and etc
+
+export const saveOrUpdateSignupSession = async (userId, req) => {
+  try {
+    // 1. Read parsed client data that traveled through req.clientInfo
+    const { ip, country, device, os, browser } = req.clientInfo || {};
+
+    // 2. Upsert session: create new or update existing unverified user
+    await sessionModel.findOneAndUpdate(
+      { userId },
+      {
+        userId,
+        ip: ip || null,
+        country: country || null,
+        device: device || null,
+        os: os || null,
+        browser: browser || null,
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  } catch (sessionError) {
+    // Non-blocking: Do not interrupt the signup flow if session recording fails
+    console.error("Failed to record signup session:", sessionError?.message);
+  }
+};

@@ -28,20 +28,8 @@ const sessionSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    statusCode: {
-      type: Number,
-      default: null,
-    },
-    responseTime: {
-      type: String,
-      default: null,
-    },
-    responseMessage: {
-      type: String,
-      default: null,
-    },
   },
-  { timestamps: true },
+  { timestamps: true, minimize: true },
 );
 
 export default mongoose.models.Session ||
