@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+set -e
+
+# Run checks for backend
+if [ -d "backend" ]; then
+  echo "🔍 Running backend checks..."
+  cd backend && npm run check-all
+  cd ..
+fi
+
+# Run checks for frontend (automatically triggers once frontend is created)
+if [ -d "frontend" ]; then
+  echo "🔍 Running frontend checks..."
+  cd frontend && npm run check-all
+  cd ..
+fi
