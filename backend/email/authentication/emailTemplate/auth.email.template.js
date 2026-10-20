@@ -48,6 +48,89 @@ const noticeBlock = (text, color = COLORS.muted) => `
     <p style="margin:20px 0 0;padding-top:16px;border-top:1px solid ${COLORS.border};font-size:13px;line-height:1.6;color:${color};">${text}</p>
 `;
 
+const securityDetailsBlock = (clientInfo) => {
+  if (!clientInfo || typeof clientInfo !== "object") return "";
+
+  const isValid = (val) =>
+    typeof val === "string" &&
+    val.trim() !== "" &&
+    val.trim().toLowerCase() !== "unknown";
+
+  const rows = [];
+
+  const hasDevice = isValid(clientInfo.device);
+  const hasOs = isValid(clientInfo.os);
+
+  if (hasDevice && hasOs) {
+    rows.push(`
+            <tr>
+                <td style="color:${COLORS.muted};padding:3px 0;">Device &amp; OS:</td>
+                <td style="font-weight:600;text-align:right;padding:3px 0;">${escapeHtml(clientInfo.device)} (${escapeHtml(clientInfo.os)})</td>
+            </tr>`);
+  } else if (hasDevice) {
+    rows.push(`
+            <tr>
+                <td style="color:${COLORS.muted};padding:3px 0;">Device:</td>
+                <td style="font-weight:600;text-align:right;padding:3px 0;">${escapeHtml(clientInfo.device)}</td>
+            </tr>`);
+  } else if (hasOs) {
+    rows.push(`
+            <tr>
+                <td style="color:${COLORS.muted};padding:3px 0;">Operating System:</td>
+                <td style="font-weight:600;text-align:right;padding:3px 0;">${escapeHtml(clientInfo.os)}</td>
+            </tr>`);
+  }
+
+  if (isValid(clientInfo.browser)) {
+    rows.push(`
+            <tr>
+                <td style="color:${COLORS.muted};padding:3px 0;">Browser:</td>
+                <td style="font-weight:600;text-align:right;padding:3px 0;">${escapeHtml(clientInfo.browser)}</td>
+            </tr>`);
+  }
+
+  if (isValid(clientInfo.country)) {
+    rows.push(`
+            <tr>
+                <td style="color:${COLORS.muted};padding:3px 0;">Location:</td>
+                <td style="font-weight:600;text-align:right;padding:3px 0;">${escapeHtml(clientInfo.country)}</td>
+            </tr>`);
+  }
+
+  if (isValid(clientInfo.ip)) {
+    rows.push(`
+            <tr>
+                <td style="color:${COLORS.muted};padding:3px 0;">IP Address:</td>
+                <td style="font-weight:600;text-align:right;padding:3px 0;font-family:monospace;">${escapeHtml(clientInfo.ip)}</td>
+            </tr>`);
+  }
+
+  // If no security details were captured, do not display the block at all
+  if (rows.length === 0) return "";
+
+  const formattedTime = new Date().toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  rows.push(`
+            <tr>
+                <td style="color:${COLORS.muted};padding:3px 0;">Time:</td>
+                <td style="font-weight:600;text-align:right;padding:3px 0;">${formattedTime}</td>
+            </tr>`);
+
+  return `
+    <div style="margin:20px 0;padding:14px 16px;background:#f8f9fe;border:1px solid ${COLORS.border};border-radius:10px;font-size:13px;line-height:1.6;">
+        <div style="font-weight:700;margin-bottom:8px;color:${COLORS.primaryDark};text-transform:uppercase;font-size:11px;letter-spacing:0.8px;">
+            🔒 Security Details
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;color:${COLORS.text};">
+            ${rows.join("")}
+        </table>
+    </div>
+  `;
+};
+
 // ---------- Base layout ----------
 
 const baseLayout = ({ title, heading, content }) => `
@@ -100,52 +183,70 @@ const baseLayout = ({ title, heading, content }) => `
 
 // ---------- Templates ----------
 
-export const getSignupOtpEmailTemplate = (username, email, otp) =>
+export const getSignupOtpEmailTemplate = (username, email, otp, clientInfo) =>
   baseLayout({
     title: "Verify your email",
     heading: `Welcome to ${APP_NAME}, ${escapeHtml(username)}! 👋`,
     content: `
             <p style="margin:0 0 8px;">Your account has been created with <strong>${escapeHtml(email)}</strong>. Enter the code below to verify your email and start chatting.</p>
             ${otpBlock(otp)}
+            ${securityDetailsBlock(clientInfo)}
             ${noticeBlock("If you didn't create a QuickTalk account, you can safely ignore this email.")}
         `,
   });
 
-export const getSignupSuccessEmailTemplate = (username, email) =>
+export const getSignupSuccessEmailTemplate = (username, email, clientInfo) =>
   baseLayout({
     title: "Registration successful",
     heading: `You're all set, ${escapeHtml(username)}! 🎉`,
     content: `
             <p style="margin:0 0 12px;">Your account <strong>${escapeHtml(email)}</strong> has been verified successfully.</p>
             <p style="margin:0;">You can now log in, find your friends, and start chatting on ${APP_NAME}.</p>
+            ${securityDetailsBlock(clientInfo)}
             ${buttonBlock("Open QuickTalk", CLIENT_URL)}
         `,
   });
 
-export const getForgotPasswordOtpEmailTemplate = (username, email, otp) =>
+export const getForgotPasswordOtpEmailTemplate = (
+  username,
+  email,
+  otp,
+  clientInfo,
+) =>
   baseLayout({
     title: "Reset your password",
     heading: `Hi ${escapeHtml(username)}, let's reset your password`,
     content: `
             <p style="margin:0 0 8px;">We received a request to reset the password for your ${APP_NAME} account (<strong>${escapeHtml(email)}</strong>). Use the code below to continue.</p>
             ${otpBlock(otp)}
+            ${securityDetailsBlock(clientInfo)}
             ${noticeBlock("Didn't request this? Ignore this email, your account is still secure.")}
         `,
   });
 
-export const getPasswordResetSuccessEmailTemplate = (username, email) =>
+export const getPasswordResetSuccessEmailTemplate = (
+  username,
+  email,
+  clientInfo,
+) =>
   baseLayout({
     title: "Password reset successful",
     heading: `Password updated, ${escapeHtml(username)} 🔐`,
     content: `
             <p style="margin:0 0 12px;">The password for <strong>${escapeHtml(email)}</strong> has been changed successfully.</p>
             <p style="margin:0;">You can now log in to ${APP_NAME} with your new password.</p>
+            ${securityDetailsBlock(clientInfo)}
             ${buttonBlock("Log in", CLIENT_URL)}
             ${noticeBlock("If you didn't make this change, please reset your password immediately and contact our support team.", COLORS.danger)}
         `,
   });
 
-export const getAccountDeletionOtpEmailTemplate = (username, email, otp) =>
+export const getAccountDeletionOtpEmailTemplate = (
+  username,
+  email,
+  otp,
+  clientInfo,
+) =>
   baseLayout({
     title: "Confirm account deletion",
     heading: `Confirm account deletion, ${escapeHtml(username)}`,
@@ -153,50 +254,68 @@ export const getAccountDeletionOtpEmailTemplate = (username, email, otp) =>
             <p style="margin:0 0 12px;">A request was made to delete the ${APP_NAME} account linked to <strong>${escapeHtml(email)}</strong>.</p>
             <p style="margin:0 0 8px;color:${COLORS.danger};"><strong>Warning:</strong> this action is irreversible. Your chats, contacts and profile will be removed.</p>
             ${otpBlock(otp)}
+            ${securityDetailsBlock(clientInfo)}
             ${noticeBlock("If you didn't request this, ignore this email and consider changing your password.", COLORS.danger)}
         `,
   });
 
-export const getAccountDeletionSuccessEmailTemplate = (username, email) =>
+export const getAccountDeletionSuccessEmailTemplate = (
+  username,
+  email,
+  clientInfo,
+) =>
   baseLayout({
     title: "Account deleted",
     heading: `Goodbye, ${escapeHtml(username)} 👋`,
     content: `
             <p style="margin:0 0 12px;">Your account <strong>${escapeHtml(email)}</strong> has been permanently deleted.</p>
             <p style="margin:0;">Your data has been removed from ${APP_NAME} in line with our privacy policy. Thanks for being part of us, you're always welcome back.</p>
+            ${securityDetailsBlock(clientInfo)}
         `,
   });
 
-export const getAccountRestoreOtpEmailTemplate = (username, email, otp) =>
+export const getAccountRestoreOtpEmailTemplate = (
+  username,
+  email,
+  otp,
+  clientInfo,
+) =>
   baseLayout({
     title: "Restore your account",
     heading: `Hi ${escapeHtml(username)}, restore your account`,
     content: `
               <p style="margin:0 0 8px;">We received a request to restore your ${APP_NAME} account linked to <strong>${escapeHtml(email)}</strong>. Enter the code below to confirm and get your account back.</p>
               ${otpBlock(otp)}
+              ${securityDetailsBlock(clientInfo)}
               ${noticeBlock("If you didn't request this, ignore this email. Your account will stay deleted.", COLORS.danger)}
           `,
   });
 
-export const getAccountRestoreSuccessEmailTemplate = (username, email) =>
+export const getAccountRestoreSuccessEmailTemplate = (
+  username,
+  email,
+  clientInfo,
+) =>
   baseLayout({
     title: "Account restored",
     heading: `Welcome back, ${escapeHtml(username)}! 🎉`,
     content: `
             <p style="margin:0 0 12px;">Your ${APP_NAME} account <strong>${escapeHtml(email)}</strong> has been restored successfully.</p>
             <p style="margin:0;">Your profile and conversations are back, so you can log in and continue where you left off.</p>
+            ${securityDetailsBlock(clientInfo)}
             ${buttonBlock("Log in to QuickTalk", CLIENT_URL)}
             ${noticeBlock("If you didn't request this restoration, please reset your password and contact our support team right away.", COLORS.danger)}
         `,
   });
 
-export const getLoginEmailTemplate = (username, email) =>
+export const getLoginEmailTemplate = (username, email, clientInfo) =>
   baseLayout({
     title: "Login Success",
     heading: `Welcome back, ${escapeHtml(username)}! 🎉`,
     content: `
-            <p style="margin:0 0 12px;">Your account <strong>${escapeHtml(email)}</strong> has been logged in successfully.</p>
-            <p style="margin:0;">You can now chat with your friends on ${APP_NAME}.</p>
+            <p style="margin:0 0 12px;">Your account <strong>${escapeHtml(email)}</strong> was logged into successfully.</p>
+            ${securityDetailsBlock(clientInfo)}
+            <p style="margin:0 0 12px;font-size:13px;color:${COLORS.muted};">If this was you, you can safely ignore this email. If you did not recognize this login, please change your password immediately.</p>
             ${buttonBlock("Open QuickTalk", CLIENT_URL)}
         `,
   });

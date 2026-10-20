@@ -13,109 +13,136 @@ import {
   getLoginEmailTemplate,
 } from "../emailTemplate/auth.email.template.js";
 
-export const sendSignupVerificationEmail = async (name, email, otp) => {
+export const sendSignupVerificationEmail = async (
+  name,
+  email,
+  otp,
+  clientInfo,
+) => {
   checkNameEmailAndOtp(name, email, otp);
 
   const emailInfo = await sendEmail(
     email,
     "Verify Your Email",
-    getSignupOtpEmailTemplate(name, email, otp),
+    getSignupOtpEmailTemplate(name, email, otp, clientInfo),
   );
 
   return emailInfo;
 };
 
-export const sendSignupSuccessEmail = async (name, email) => {
+export const sendSignupSuccessEmail = async (name, email, clientInfo) => {
   checkNameAndEmail(name, email);
 
   const emailInfo = await sendEmail(
     email,
     "Registration Successful",
-    getSignupSuccessEmailTemplate(name, email),
+    getSignupSuccessEmailTemplate(name, email, clientInfo),
   );
 
   return emailInfo;
 };
 
-export const sendForgotPasswordEmail = async (name, email, otp) => {
+export const sendForgotPasswordEmail = async (name, email, otp, clientInfo) => {
   checkNameEmailAndOtp(name, email, otp);
 
   const emailInfo = await sendEmail(
     email,
     "Password Reset Request",
-    getForgotPasswordOtpEmailTemplate(name, email, otp),
+    getForgotPasswordOtpEmailTemplate(name, email, otp, clientInfo),
   );
 
   return emailInfo;
 };
 
-export const sendPasswordResetSuccessEmail = async (name, email) => {
+export const sendPasswordResetSuccessEmail = async (
+  name,
+  email,
+  clientInfo,
+) => {
   checkNameAndEmail(name, email);
 
   const emailInfo = await sendEmail(
     email,
     "Password Reset Successful",
-    getPasswordResetSuccessEmailTemplate(name, email),
+    getPasswordResetSuccessEmailTemplate(name, email, clientInfo),
   );
 
   return emailInfo;
 };
 
-export const getAccountDeletionRequestEmail = async (name, email, otp) => {
+export const getAccountDeletionRequestEmail = async (
+  name,
+  email,
+  otp,
+  clientInfo,
+) => {
   checkNameEmailAndOtp(name, email, otp);
 
   const emailInfo = await sendEmail(
     email,
     "Account Deletion Request",
-    getAccountDeletionOtpEmailTemplate(name, email, otp),
+    getAccountDeletionOtpEmailTemplate(name, email, otp, clientInfo),
   );
 
   return emailInfo;
 };
 
-export const getAccountDeletionSuccessEmail = async (name, email) => {
+export const getAccountDeletionSuccessEmail = async (
+  name,
+  email,
+  clientInfo,
+) => {
   checkNameAndEmail(name, email);
 
   const emailInfo = await sendEmail(
     email,
     "Account Deletion Success",
-    getAccountDeletionSuccessEmailTemplate(name, email),
+    getAccountDeletionSuccessEmailTemplate(name, email, clientInfo),
   );
 
   return emailInfo;
 };
 
-export const getAccountRestoreOtpEmail = async (name, email, otp) => {
+export const getAccountRestoreOtpEmail = async (
+  name,
+  email,
+  otp,
+  clientInfo,
+) => {
   checkNameEmailAndOtp(name, email, otp);
 
   const emailInfo = await sendEmail(
     email,
     "Account Restore Request",
-    getAccountRestoreOtpEmailTemplate(name, email, otp),
+    getAccountRestoreOtpEmailTemplate(name, email, otp, clientInfo),
   );
 
   return emailInfo;
 };
 
-export const getAccountRestoreSuccessEmail = async (name, email) => {
+export const getAccountRestoreSuccessEmail = async (
+  name,
+  email,
+  clientInfo,
+) => {
   checkNameAndEmail(name, email);
 
   const emailInfo = await sendEmail(
     email,
     "Account Restore Success",
-    getAccountRestoreSuccessEmailTemplate(name, email),
+    getAccountRestoreSuccessEmailTemplate(name, email, clientInfo),
   );
 
   return emailInfo;
 };
 
-export const getLoginEmail = async (name, email) => {
+export const getLoginEmail = async (name, email, clientInfo) => {
   checkNameAndEmail(name, email);
 
   const emailInfo = await sendEmail(
     email,
     "Login Success",
-    getLoginEmailTemplate(name, email),
+    getLoginEmailTemplate(name, email, clientInfo),
   );
   return emailInfo;
 };

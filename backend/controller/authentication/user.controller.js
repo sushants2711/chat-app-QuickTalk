@@ -100,6 +100,7 @@ export const signupController = async (req, res) => {
             savedExistingUser.name,
             savedExistingUser.email,
             otp,
+            req.clientInfo,
           );
         } catch (error) {
           return internalServerErrorResponse(
@@ -165,7 +166,7 @@ export const signupController = async (req, res) => {
 
     // now send an otp to the user email
     try {
-      await sendSignupVerificationEmail(name, email, otp);
+      await sendSignupVerificationEmail(name, email, otp, req.clientInfo);
     } catch (error) {
       return internalServerErrorResponse(
         res,
@@ -270,7 +271,7 @@ export const loginController = async (req, res) => {
 
     // send an email to the user
     try {
-      await getLoginEmail(savedData.name, savedData.email);
+      await getLoginEmail(savedData.name, savedData.email, req.clientInfo);
     } catch (error) {
       return internalServerErrorResponse(
         res,
