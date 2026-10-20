@@ -2,6 +2,7 @@ import userModel from "../../model/authentication/user.model.js";
 import { TOKEN_NAME } from "../../config/constantData/constant.js";
 import {
   getLoginEmail,
+  sendSignupSuccessEmail,
   sendSignupVerificationEmail,
 } from "../../email/authentication/sendEmail/send.email.js";
 import { checkOTPLimit } from "../../redis/authentication/check.otp.limit.js";
@@ -18,6 +19,8 @@ import {
   successResponse,
 } from "../../utils/sendResponse/response.handler.js";
 import { saveOrUpdateSignupSession } from "../session/session.controller.js";
+import { getStoredOTP } from "../../redis/authentication/get.store.otp.js";
+import { deleteOTP } from "../../redis/authentication/delete.otp.js";
 
 // @desc: Register a new user
 // @route: POST /api/v1/user/signup
@@ -85,7 +88,7 @@ export const signupController = async (req, res) => {
 
         const savedExistingUser = await userExist.save();
 
-        // Record or update session data for existing unverified user
+        // Record or update session data for existing unverified user to different model
         await saveOrUpdateSignupSession(savedExistingUser._id, req);
 
         // store OTP for 5 minutes
@@ -306,6 +309,80 @@ export const loginController = async (req, res) => {
 // @desc: verify user otp
 // @route: POST /api/v1/user/verify-otp
 // @access: Public
+
+export const otpController = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+    const user = req.user;
+
+    const email = user.email;
+
+    // fetch the otp from redis if exist
+    const otpExist = await getStoredOTP(email);
+
+    // if otp is not match with stored otp
+    if (otpExist !== otp) {
+      return badRequestResponse(res, "Invalid Credentials");
+    }
+
+    // delete otp if exist
+    await deleteOTP(email);
+
+    // update the user isVerified field
+    user.isVerified = true;
+
+    const savedData = await user.save();
+
+    if (!savedData) {
+      return badRequestResponse(res, "User not saved");
+    }
+
+    // send a email to the user
+    try {
+      await sendSignupSuccessEmail(
+        savedData.name,
+        savedData.email,
+        req.clientInfo,
+      );
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send email",
+        error?.message,
+      );
+    }
+
+    const dataSendToClient = savedData.toObject();
+
+    delete dataSendToClient.password;
+
+    // send a cookie to the user
+    try {
+      const token = await sendCookieToUser(dataSendToClient._id, res);
+
+      dataSendToClient[TOKEN_NAME] = token;
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send cookie",
+        error?.message,
+      );
+    }
+
+    return successResponse(
+      res,
+      "Email Verified Successfully",
+      dataSendToClient,
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
 
 // @desc: Logout a user
 // @route: POST /api/v1/user/logout
