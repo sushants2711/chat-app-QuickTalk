@@ -5,15 +5,26 @@ import {
   getAllSessionController,
   getSessionAggregateController,
 } from "../../controller/session/session.controller.js";
+import { verifyCookieCredentials } from "../../utils/cookie/verifyDataCredentials/verify.cookie.credentials.js";
 
 const sessionRouter = express.Router();
 
 sessionRouter
   .route("/all-session")
-  .get(verifyCookie, verifyAdmin, getAllSessionController);
+  .get(
+    verifyCookie,
+    verifyCookieCredentials,
+    verifyAdmin,
+    getAllSessionController,
+  );
 
 sessionRouter
   .route("/session-aggregated")
-  .get(verifyCookie, verifyAdmin, getSessionAggregateController);
+  .get(
+    verifyCookie,
+    verifyCookieCredentials,
+    verifyAdmin,
+    getSessionAggregateController,
+  );
 
 export default sessionRouter;

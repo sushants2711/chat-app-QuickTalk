@@ -9,15 +9,12 @@ import {
   otpController,
   signupController,
 } from "../../controller/authentication/user.controller.js";
+import { verifyCookie } from "../../utils/cookie/verifyCookie/verify.cookie.js";
 
 const userRouter = express.Router();
 
-// @desc: register a new user
-// @route: POST /api/v1/user/signup
-// @access: public
-
 userRouter.route("/signup").post(signupMiddleware, signupController);
 userRouter.route("/login").post(loginMiddleware, loginController);
-userRouter.route("/otp").post(otpMiddleware, otpController);
+userRouter.route("/otp").post(verifyCookie, otpMiddleware, otpController);
 
 export default userRouter;

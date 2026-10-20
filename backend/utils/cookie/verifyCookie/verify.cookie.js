@@ -38,18 +38,6 @@ export const verifyCookie = async (req, res, next) => {
       return notFoundResponse(res, "User not found");
     }
 
-    if (!user.isVerified) {
-      return notFoundResponse(res, "User is not verified");
-    }
-
-    if (user.accountBlock) {
-      return notFoundResponse(res, "User account is blocked");
-    }
-
-    if (user.isDeleted) {
-      return notFoundResponse(res, "User is deleted");
-    }
-
     req.user = user;
 
     next();
