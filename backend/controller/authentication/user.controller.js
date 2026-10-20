@@ -408,6 +408,20 @@ export const logoutController = async (req, res) => {
 // @route: GET /api/v1/user/current-user
 // @access: Private
 
+export const getCurrentUserController = async (req, res) => {
+  try {
+    const user = req.user;
+
+    return successResponse(res, "User fetch Successfully", user);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
+
 // @desc: forgot user password
 // @route: POST /api/v1/user/forgot-password
 // @access: Public

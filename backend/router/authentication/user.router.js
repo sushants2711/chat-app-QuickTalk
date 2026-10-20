@@ -5,6 +5,7 @@ import {
   signupMiddleware,
 } from "../../middleware/authentication/user.middleware.js";
 import {
+  getCurrentUserController,
   loginController,
   logoutController,
   otpController,
@@ -21,5 +22,8 @@ userRouter.route("/otp").post(verifyCookie, otpMiddleware, otpController);
 userRouter
   .route("/logout")
   .post(verifyCookie, verifyCookieCredentials, logoutController);
+userRouter
+  .route("/current-user")
+  .get(verifyCookie, verifyCookieCredentials, getCurrentUserController);
 
 export default userRouter;
