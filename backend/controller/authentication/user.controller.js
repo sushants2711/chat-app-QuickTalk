@@ -1,5 +1,5 @@
 import userModel from "../../model/authentication/user.model.js";
-import { TOKEN_NAME } from "../../config/constantData/constant.js";
+import { COOKIE_NAME, TOKEN_NAME } from "../../config/constantData/constant.js";
 import {
   getLoginEmail,
   sendSignupSuccessEmail,
@@ -21,6 +21,7 @@ import {
 import { saveOrUpdateSignupSession } from "../session/session.controller.js";
 import { getStoredOTP } from "../../redis/authentication/get.store.otp.js";
 import { deleteOTP } from "../../redis/authentication/delete.otp.js";
+import { cookieOptionsSetting } from "../../utils/cookie/cookieConf/cookie.option.js";
 
 // @desc: Register a new user
 // @route: POST /api/v1/user/signup
@@ -387,6 +388,21 @@ export const otpController = async (req, res) => {
 // @desc: Logout a user
 // @route: POST /api/v1/user/logout
 // @access: Private
+
+export const logoutController = async (req, res) => {
+  try {
+    // Clear the user cookie
+    res.clearCookie(COOKIE_NAME, cookieOptionsSetting);
+
+    return successResponse(res, "Logout Successfully");
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
 
 // @desc: Get current user
 // @route: GET /api/v1/user/current-user
