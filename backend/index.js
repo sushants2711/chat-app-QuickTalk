@@ -12,6 +12,7 @@ import redisClient from "./config/redis/redis.connect.js";
 import { requestLogger } from "./middleware/logger/request.logger.js";
 import { setupSwaggerDocs } from "./utils/swaggerApiDocs/swaggerDocuments/swagger.docs.js";
 import userRouter from "./router/authentication/user.router.js";
+import sessionRouter from "./router/session/session.router.js";
 
 // dotenv config
 dotenv.config();
@@ -94,6 +95,7 @@ app.get("/", (req, res) => {
 
 // api end points
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/session", sessionRouter);
 
 // server start
 app.listen(PORTNUMBER, () => {
