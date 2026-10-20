@@ -189,3 +189,14 @@ export const getAccountRestoreSuccessEmailTemplate = (username, email) =>
             ${noticeBlock("If you didn't request this restoration, please reset your password and contact our support team right away.", COLORS.danger)}
         `,
   });
+
+export const getLoginEmailTemplate = (username, email) =>
+  baseLayout({
+    title: "Login Success",
+    heading: `Welcome back, ${escapeHtml(username)}! 🎉`,
+    content: `
+            <p style="margin:0 0 12px;">Your account <strong>${escapeHtml(email)}</strong> has been logged in successfully.</p>
+            <p style="margin:0;">You can now chat with your friends on ${APP_NAME}.</p>
+            ${buttonBlock("Open QuickTalk", CLIENT_URL)}
+        `,
+  });

@@ -10,6 +10,7 @@ import {
   getAccountDeletionSuccessEmailTemplate,
   getAccountRestoreOtpEmailTemplate,
   getAccountRestoreSuccessEmailTemplate,
+  getLoginEmailTemplate,
 } from "../emailTemplate/auth.email.template.js";
 
 export const sendSignupVerificationEmail = async (name, email, otp) => {
@@ -105,5 +106,16 @@ export const getAccountRestoreSuccessEmail = async (name, email) => {
     getAccountRestoreSuccessEmailTemplate(name, email),
   );
 
+  return emailInfo;
+};
+
+export const getLoginEmail = async (name, email) => {
+  checkNameAndEmail(name, email);
+
+  const emailInfo = await sendEmail(
+    email,
+    "Login Success",
+    getLoginEmailTemplate(name, email),
+  );
   return emailInfo;
 };

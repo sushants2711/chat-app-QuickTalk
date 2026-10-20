@@ -1,6 +1,12 @@
 import express from "express";
-import { signupMiddleware } from "../../middleware/authentication/user.middleware.js";
-import { signupController } from "../../controller/authentication/user.controller.js";
+import {
+  loginMiddleware,
+  signupMiddleware,
+} from "../../middleware/authentication/user.middleware.js";
+import {
+  loginController,
+  signupController,
+} from "../../controller/authentication/user.controller.js";
 
 const userRouter = express.Router();
 
@@ -9,5 +15,6 @@ const userRouter = express.Router();
 // @access: public
 
 userRouter.route("/signup").post(signupMiddleware, signupController);
+userRouter.route("/login").post(loginMiddleware, loginController);
 
 export default userRouter;

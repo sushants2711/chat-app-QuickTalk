@@ -1,6 +1,9 @@
 import userModel from "../../model/authentication/user.model.js";
 import { TOKEN_NAME } from "../../config/constantData/constant.js";
-import { sendSignupVerificationEmail } from "../../email/authentication/sendEmail/send.email.js";
+import {
+  getLoginEmail,
+  sendSignupVerificationEmail,
+} from "../../email/authentication/sendEmail/send.email.js";
 import { checkOTPLimit } from "../../redis/authentication/check.otp.limit.js";
 import { storeOTP } from "../../redis/authentication/check.store.otp.js";
 import { increaseOTPCount } from "../../redis/authentication/increase.otp.limit.js";
@@ -207,6 +210,97 @@ export const signupController = async (req, res) => {
 // @desc: Login a user
 // @route: POST /api/v1/user/login
 // @access: Public
+
+export const loginController = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // check email exist or not
+    const userExist = await userModel.findOne({ email });
+
+    if (!userExist) {
+      return badRequestResponse(res, "Invalid Credentials");
+    }
+
+    // check user status if userExist
+    if (userExist) {
+      // check user is verified or not
+      if (!userExist.isVerified) {
+        return badRequestResponse(
+          res,
+          "Account Not Verified. Please Verify Your Account",
+        );
+      }
+
+      // check user is blocked or not
+      if (userExist.accountBlock) {
+        return badRequestResponse(
+          res,
+          "Your Account Has Been Blocked, Please Contact To Admin",
+        );
+      }
+
+      if (userExist.isDeleted) {
+        return badRequestResponse(
+          res,
+          "Your Account Has Been Deleted, Please Restore It First",
+        );
+      }
+    }
+
+    // check the password if user Exist
+    const isPasswordMatch = await verifyPassword(password, userExist.password);
+
+    // if password not match
+    if (!isPasswordMatch) {
+      return badRequestResponse(res, "Invalid Credentials");
+    }
+
+    userExist.lastLogin = Date.now();
+
+    const savedData = await userExist.save();
+
+    if (!savedData) {
+      return badRequestResponse(res, "Failed to login, please try again later");
+    }
+
+    const dataSendToClient = savedData.toObject();
+
+    delete dataSendToClient.password;
+
+    // send an email to the user
+    try {
+      await getLoginEmail(savedData.name, savedData.email);
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send an email",
+        error?.message,
+      );
+    }
+
+    // send an cookie to the user
+    try {
+      const token = await sendCookieToUser(dataSendToClient._id, res);
+
+      dataSendToClient[TOKEN_NAME] = token;
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send a cookie",
+        error?.message,
+      );
+    }
+
+    return successResponse(res, "Login Successfully", dataSendToClient);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
 
 // @desc: verify user otp
 // @route: POST /api/v1/user/verify-otp
