@@ -54,6 +54,15 @@ export const verifyCookie = async (req, res, next) => {
 
     next();
   } catch (error) {
+    if (
+      error.name === "JsonWebTokenError" ||
+      error.name === "TokenExpiredError"
+    ) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid or expired token" });
+    }
+
     return internalServerErrorResponse(
       res,
       "Internal Server Error",

@@ -7,6 +7,7 @@ const userRouter = express.Router();
 // @desc: register a new user
 // @route: POST /api/v1/user/signup
 // @access: public
+
 userRouter.route("/signup").post(signupMiddleware, signupController);
 
 export default userRouter;
