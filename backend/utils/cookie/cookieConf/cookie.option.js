@@ -1,4 +1,7 @@
-import { COOKIE_MAX_AGE, NODE_ENV } from "../config/constant.js";
+import {
+  COOKIE_MAX_AGE,
+  NODE_ENV,
+} from "../../../config/constantData/constant.js";
 
 export const cookieOptionsSetting = {
   maxAge: Number(COOKIE_MAX_AGE),

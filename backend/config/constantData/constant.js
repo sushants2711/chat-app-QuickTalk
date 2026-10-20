@@ -19,3 +19,4 @@ export const TOKEN_NAME = process.env.TOKEN_NAME;
 export const CLIENT_URL = process.env.CLIENT_URL;
 export const APP_NAME = process.env.APP_NAME;
 export const OTP_EXPIRY_MINUTES = process.env.OTP_EXPIRY_MINUTES;
+export const OTP_LENGTH = process.env.OTP_LENGTH;

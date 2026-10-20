@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { validateEnv } from "./config/envValidation/env.validation.js";
 import { ALLOWED_ORIGINS, PORT } from "./config/constantData/constant.js";
-import { connectDb } from "./config/mongoDb/db.connect.js";
+import { connectDb } from "./config/mongodb/db.connect.js";
 import redisClient from "./config/redis/redis.connect.js";
 import { requestLogger } from "./middleware/logger/request.logger.js";
 import { setupSwaggerDocs } from "./utils/swaggerApiDocs/swaggerDocuments/swagger.docs.js";
@@ -36,7 +36,7 @@ const PORTNUMBER = PORT;
 connectDb();
 
 // redis db connection
-redisClient();
+await redisClient.connect();
 
 // helmet config
 app.use(

@@ -22,6 +22,7 @@ export const validateEnv = () => {
     "CLIENT_URL",
     "APP_NAME",
     "OTP_EXPIRY_MINUTES",
+    "OTP_LENGTH",
   ];
 
   const missingVars = requiredEnvVars.filter((curr) => !process.env[curr]);
