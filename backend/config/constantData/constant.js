@@ -20,3 +20,6 @@ export const CLIENT_URL = process.env.CLIENT_URL;
 export const APP_NAME = process.env.APP_NAME;
 export const OTP_EXPIRY_MINUTES = process.env.OTP_EXPIRY_MINUTES;
 export const OTP_LENGTH = process.env.OTP_LENGTH;
+export const CLOUD_NAME = process.env.CLOUD_NAME;
+export const API_KEY = process.env.API_KEY;
+export const API_SECRET = process.env.API_SECRET;
