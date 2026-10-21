@@ -325,8 +325,12 @@ export const otpController = async (req, res) => {
     const otpExist = await getStoredOTP(email, "signup");
 
     // if otp is not match with stored otp
+
+    if (!otpExist) {
+      return badRequestResponse(res, "OTP not found");
+    }
     if (otpExist !== otp) {
-      return badRequestResponse(res, "Invalid Credentials");
+      return badRequestResponse(res, "Invalid OTP");
     }
 
     // delete otp if exist
