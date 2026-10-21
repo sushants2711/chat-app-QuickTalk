@@ -1,6 +1,7 @@
 import userModel from "../../model/authentication/user.model.js";
 import { COOKIE_NAME, TOKEN_NAME } from "../../config/constantData/constant.js";
 import {
+  getAccountDeletionRequestEmail,
   getLoginEmail,
   sendForgotPasswordEmail,
   sendPasswordResetSuccessEmail,
@@ -668,9 +669,84 @@ export const changePasswordController = async (req, res) => {
 // @route: PUT / api/v1/user/delete-account
 // @access: Private
 
+export const deleteAccountRequestController = async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    const user = req.user;
+
+    const email = user.email;
+
+    const userExist = await userModel.findOne({ email });
+
+    if (!userExist) {
+      return badRequestResponse(res, "User Not Found");
+    }
+
+    const isPasswordMatch = await verifyPassword(password, userExist.password);
+
+    if (!isPasswordMatch) {
+      return badRequestResponse(res, "Invalid Credentials");
+    }
+
+    // check otp limit exist in redis
+    const isAllowedOtp = await checkOTPLimit(
+      userExist.email,
+      "delete_account",
+      3,
+    );
+
+    if (!isAllowedOtp) {
+      return badRequestResponse(res, "Limit reached. Try again later");
+    }
+
+    // generate otp
+    const otp = generateOTP();
+
+    // store in redis for 5 miniutes
+    await storeOTP(userExist.email, otp, "delete_account");
+
+    // increase the daily limit of otp
+    await increaseOTPCount(userExist.email, "delete_account");
+
+    // send an otp to user email
+    try {
+      await getAccountDeletionRequestEmail(
+        userExist.name,
+        userExist.email,
+        otp,
+        req.clientInfo,
+      );
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send an otp",
+        error?.message,
+      );
+    }
+
+    // return a success message to user
+    return successResponse(res, "Otp sent successfully");
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
+
 // @desc: delete user account request success
 // @route: PUT / api/v1/user/delete-account-success
 // @access: Private
+
+// export const deleteAccountSuccessController = async (req, res) => {
+//   try {
+
+//   } catch (error) {
+//     return internalServerErrorResponse(res, "Internal Server Error", error?.message);
+//   };
+// };
 
 // @desc: restore user account request
 // @route: PUT / api/v1/user/restore-account
