@@ -147,3 +147,34 @@ export const resetPasswordMiddleware = async (req, res, next) => {
     );
   }
 };
+
+// @desc: change user password
+// @route: PUT / api/v1/user/change-password
+// @access: Private
+export const changePasswordMiddleware = async (req, res, next) => {
+  try {
+    const schema = joi.object({
+      currentPassword: passwordSchemaValidation,
+      newPassword: passwordSchemaValidation,
+      confirmPassword: passwordSchemaValidation,
+    });
+
+    if (req.body.newPassword !== req.body.confirmPassword) {
+      return badRequestResponse(res, "Password mismatch");
+    }
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(res, error?.details?.[0]?.message);
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};

@@ -1,10 +1,12 @@
 import express from "express";
 import {
+  changePasswordMiddleware,
   loginMiddleware,
   otpMiddleware,
   signupMiddleware,
 } from "../../middleware/authentication/user.middleware.js";
 import {
+  changePasswordController,
   getCurrentUserController,
   loginController,
   logoutController,
@@ -25,5 +27,13 @@ userRouter
 userRouter
   .route("/current-user")
   .get(verifyCookie, verifyCookieCredentials, getCurrentUserController);
+userRouter
+  .route("/change-password")
+  .put(
+    verifyCookie,
+    verifyCookieCredentials,
+    changePasswordMiddleware,
+    changePasswordController,
+  );
 
 export default userRouter;

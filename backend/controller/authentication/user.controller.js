@@ -448,6 +448,57 @@ export const getCurrentUserController = async (req, res) => {
 // @route: PUT / api/v1/user/change-password
 // @access: Private
 
+export const changePasswordController = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = req.user;
+
+    const email = user.email;
+
+    const userExist = await userModel.findOne({ email });
+
+    if (!userExist) {
+      return badRequestResponse(res, "User Not Found");
+    }
+
+    const isPasswordMatch = await verifyPassword(
+      currentPassword,
+      userExist.password,
+    );
+
+    if (!isPasswordMatch) {
+      return badRequestResponse(res, "Invalid Current Password");
+    }
+
+    const hashPassword = await hashPassword(newPassword);
+
+    userExist.password = hashPassword;
+
+    const savedData = await userExist.save();
+
+    if (!savedData) {
+      return badRequestResponse(res, "Failed to update password");
+    }
+
+    const dataSendToClient = savedData.toObject();
+
+    delete dataSendToClient.password;
+
+    return successResponse(
+      res,
+      "Password Change Successfully",
+      dataSendToClient,
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
+
 // @desc: delete user account request
 // @route: PUT / api/v1/user/delete-account
 // @access: Private
