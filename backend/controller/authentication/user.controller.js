@@ -2,6 +2,8 @@ import userModel from "../../model/authentication/user.model.js";
 import { COOKIE_NAME, TOKEN_NAME } from "../../config/constantData/constant.js";
 import {
   getLoginEmail,
+  sendForgotPasswordEmail,
+  sendPasswordResetSuccessEmail,
   sendSignupSuccessEmail,
   sendSignupVerificationEmail,
 } from "../../email/authentication/sendEmail/send.email.js";
@@ -426,23 +428,182 @@ export const getCurrentUserController = async (req, res) => {
 // @route: POST /api/v1/user/forgot-password
 // @access: Public
 
-// export const forgotPasswordController = async (req, res) => {
-//   try {
-//     const { email } = req.body;
+export const forgotPasswordController = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-//     const userExist = await userModel.findOne({ email });
-//   } catch (error) {
-//     return internalServerErrorResponse(
-//       res,
-//       "Internal Server Error",
-//       error?.message,
-//     );
-//   }
-// };
+    const userExist = await userModel.findOne({ email });
+
+    if (!userExist) {
+      return badRequestResponse(res, "User Not Found");
+    }
+
+    if (userExist) {
+      if (!userExist.isVerified) {
+        return badRequestResponse(res, "User Not Verified");
+      }
+
+      if (userExist.accountBlock) {
+        return badRequestResponse(res, "Your Account Has Been Blocked");
+      }
+
+      if (userExist.isDeleted) {
+        return badRequestResponse(res, "Your Account Has Been Deleted");
+      }
+    }
+
+    // check the limit of sending otp
+    const isAllowedOtp = await checkOTPLimit(email, "forgot_password", 5);
+
+    if (!isAllowedOtp) {
+      return badRequestResponse(
+        res,
+        "Password reset limit reached. Please try again later",
+      );
+    }
+
+    // generate otp
+    const otp = generateOTP();
+
+    // store otp in redis with 5 min expiry time
+    await storeOTP(email, otp, "forgot_password");
+
+    // increase the redis daily limit of forgot password otp
+    await increaseOTPCount(email, "forgot_password");
+
+    // send an otp to the user email
+    try {
+      await sendForgotPasswordEmail(
+        userExist.name,
+        userExist.email,
+        otp,
+        req.clientInfo,
+      );
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send an otp",
+        error?.message,
+      );
+    }
+
+    const dataSendToClient = userExist.toObject();
+
+    delete dataSendToClient.password;
+
+    // send an cookie to the user also
+    try {
+      const token = await sendCookieToUser(userExist._id, res);
+
+      dataSendToClient[TOKEN_NAME] = token;
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send a cookie",
+        error?.message,
+      );
+    }
+
+    // return a success message to user
+    return successResponse(res, "Otp sent successfully", dataSendToClient);
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
 
 // @desc: reset user password
 // @route: PUT /api/v1/user/reset-password
 // @access: Private
+
+export const resetPasswordController = async (req, res) => {
+  try {
+    const { otp, password } = req.body;
+
+    const user = req.user;
+
+    const email = user.email;
+
+    // check otp is exist or not in redis
+
+    const storedOtp = await getStoredOTP(email, "forgot_password");
+
+    if (!storedOtp) {
+      return badRequestResponse(res, "OTP not found");
+    }
+
+    if (storedOtp !== otp) {
+      return badRequestResponse(res, "Invalid OTP");
+    }
+
+    // delete OTP immediately after verification
+    await deleteOTP(email, "forgot_password");
+
+    // hash the password
+    const hashedThePassword = await hashPassword(password);
+
+    const updateUserData = await userModel.findByIdAndUpdate(
+      user._id,
+      { password: hashedThePassword },
+      { new: true },
+    );
+
+    if (!updateUserData) {
+      return badRequestResponse(
+        res,
+        "Failed to reset password, Try again later",
+      );
+    }
+
+    // send a success email to the user
+    try {
+      await sendPasswordResetSuccessEmail(
+        updateUserData.name,
+        updateUserData.email,
+        req.clientInfo,
+      );
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send a email",
+        error?.message,
+      );
+    }
+
+    const dataSendToClient = updateUserData.toObject();
+
+    delete dataSendToClient.password;
+
+    // send cookie to the user
+    try {
+      const token = await sendCookieToUser(user._id, res);
+
+      dataSendToClient[TOKEN_NAME] = token;
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send a cookie",
+        error?.message,
+      );
+    }
+
+    // return a success message to user
+    return successResponse(
+      res,
+      "Password Reset Successfully",
+      dataSendToClient,
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
 
 // @desc: change user password
 // @route: PUT / api/v1/user/change-password

@@ -1,16 +1,20 @@
 import express from "express";
 import {
   changePasswordMiddleware,
+  forgotPasswordMiddleware,
   loginMiddleware,
   otpMiddleware,
+  resetPasswordMiddleware,
   signupMiddleware,
 } from "../../middleware/authentication/user.middleware.js";
 import {
   changePasswordController,
+  forgotPasswordController,
   getCurrentUserController,
   loginController,
   logoutController,
   otpController,
+  resetPasswordController,
   signupController,
 } from "../../controller/authentication/user.controller.js";
 import { verifyCookie } from "../../utils/cookie/verifyCookie/verify.cookie.js";
@@ -34,6 +38,17 @@ userRouter
     verifyCookieCredentials,
     changePasswordMiddleware,
     changePasswordController,
+  );
+userRouter
+  .route("/forgot-password")
+  .put(forgotPasswordMiddleware, forgotPasswordController);
+userRouter
+  .route("/reset-password")
+  .put(
+    verifyCookie,
+    verifyCookieCredentials,
+    resetPasswordMiddleware,
+    resetPasswordController,
   );
 
 export default userRouter;
