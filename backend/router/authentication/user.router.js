@@ -19,6 +19,8 @@ import {
   logoutController,
   otpController,
   resetPasswordController,
+  restoreAccountRequestController,
+  restoreAccountSuccessController,
   signupController,
 } from "../../controller/authentication/user.controller.js";
 import { verifyCookie } from "../../utils/cookie/verifyCookie/verify.cookie.js";
@@ -70,6 +72,12 @@ userRouter
     otpMiddleware,
     deleteAccountSuccessController,
   );
+userRouter
+  .route("/restore-account")
+  .put(forgotPasswordMiddleware, restoreAccountRequestController);
+userRouter
+  .route("/restore-account-success")
+  .put(verifyCookie, otpMiddleware, restoreAccountSuccessController);
 
 userRouter.route("/admin-signup").post(signupMiddleware, adminSignupController);
 

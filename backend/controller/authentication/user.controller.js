@@ -3,6 +3,8 @@ import { COOKIE_NAME, TOKEN_NAME } from "../../config/constantData/constant.js";
 import {
   getAccountDeletionRequestEmail,
   getAccountDeletionSuccessEmail,
+  getAccountRestoreOtpEmail,
+  getAccountRestoreSuccessEmail,
   getLoginEmail,
   sendForgotPasswordEmail,
   sendPasswordResetSuccessEmail,
@@ -795,9 +797,169 @@ export const deleteAccountSuccessController = async (req, res) => {
 // @route: PUT / api/v1/user/restore-account
 // @access: Private
 
+export const restoreAccountRequestController = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // check email exist or not
+    const userExist = await userModel.findOne({ email });
+
+    if (!userExist) {
+      return badRequestResponse(res, "User Not Found");
+    }
+
+    // check if the user is verified or not
+    if (!userExist.isVerified) {
+      return badRequestResponse(res, "User Not Verified");
+    }
+
+    // check if the user is deleted or not
+    if (!userExist.isDeleted) {
+      return badRequestResponse(res, "User Account is not Deleted");
+    }
+
+    // check if the user is blocked or not
+    if (userExist.accountBlock) {
+      return badRequestResponse(res, "User Account Blocked");
+    }
+
+    // now check the otp limit in redis
+    const isAllowedOtp = await checkOTPLimit(email, "restore_account", 5);
+
+    if (!isAllowedOtp) {
+      return badRequestResponse(res, "Limit Reached. Try again later");
+    }
+
+    // generate otp
+    const otp = generateOTP();
+
+    // store otp in redis
+    await storeOTP(email, otp, "restore_account");
+
+    // increase otp count
+    await increaseOTPCount(email, "restore_account");
+
+    // send an otp to user
+    try {
+      await getAccountRestoreOtpEmail(
+        userExist.name,
+        email,
+        otp,
+        req.clientInfo,
+      );
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send otp",
+        error?.message,
+      );
+    }
+
+    const dataSendToClient = userExist.toObject();
+
+    delete dataSendToClient.password;
+
+    // send a cookie to user that can help you to restore account otp
+    try {
+      const token = await sendCookieToUser(userExist._id, res);
+
+      dataSendToClient[TOKEN_NAME] = token;
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send a cookie",
+        error?.message,
+      );
+    }
+
+    return successResponse(res, "OTP Sent Successfully for restoring account");
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
+
 // @desc: restore user account success
 // @route: PUT / api/v1/user/restore-account-success
 // @access: Private
+
+export const restoreAccountSuccessController = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+    const user = req.user;
+
+    const email = user.email;
+
+    if (!user.isVerified) {
+      return badRequestResponse(res, "User Not Verified");
+    }
+
+    if (!user.isDeleted) {
+      return badRequestResponse(res, "User Account is not Deleted");
+    }
+
+    if (user.accountBlock) {
+      return badRequestResponse(res, "User Account Blocked");
+    }
+
+    const storedOtp = await getStoredOTP(email, "restore_account");
+
+    if (!storedOtp) {
+      return badRequestResponse(res, "OTP not found");
+    }
+
+    if (storedOtp !== otp) {
+      return badRequestResponse(res, "Invalid OTP");
+    }
+
+    await deleteOTP(email, "restore_account");
+
+    const updateUserData = await userModel.findByIdAndUpdate(
+      user._id,
+      { isDeleted: false },
+      { new: true },
+    );
+
+    if (!updateUserData) {
+      return badRequestResponse(res, "Failed to restore account");
+    }
+
+    // send an email if account restored successfully
+    try {
+      await getAccountRestoreSuccessEmail(
+        updateUserData.name,
+        updateUserData.email,
+        req.clientInfo,
+      );
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send an email",
+        error?.message,
+      );
+    }
+
+    const dataSendToClient = updateUserData.toObject();
+
+    delete dataSendToClient.password;
+
+    return successResponse(
+      res,
+      "Account Restored Successfully",
+      dataSendToClient,
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
 
 // @desc: admin signup controller
 // @route: POST / api/v1/user/admin-signup
