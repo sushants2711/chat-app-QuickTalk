@@ -2,6 +2,7 @@ import express from "express";
 import {
   changePasswordMiddleware,
   deleteAccountRequestMiddleware,
+  deleteAccountSuccessMiddleware,
   forgotPasswordMiddleware,
   loginMiddleware,
   otpMiddleware,
@@ -11,6 +12,7 @@ import {
 import {
   changePasswordController,
   deleteAccountRequestController,
+  deleteAccountSuccessController,
   forgotPasswordController,
   getCurrentUserController,
   loginController,
@@ -59,6 +61,14 @@ userRouter
     verifyCookieCredentials,
     deleteAccountRequestMiddleware,
     deleteAccountRequestController,
+  );
+userRouter
+  .route("/delete-account-success")
+  .put(
+    verifyCookie,
+    verifyCookieCredentials,
+    deleteAccountSuccessMiddleware,
+    deleteAccountSuccessController,
   );
 
 export default userRouter;

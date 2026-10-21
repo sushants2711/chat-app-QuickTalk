@@ -2,6 +2,7 @@ import userModel from "../../model/authentication/user.model.js";
 import { COOKIE_NAME, TOKEN_NAME } from "../../config/constantData/constant.js";
 import {
   getAccountDeletionRequestEmail,
+  getAccountDeletionSuccessEmail,
   getLoginEmail,
   sendForgotPasswordEmail,
   sendPasswordResetSuccessEmail,
@@ -740,13 +741,63 @@ export const deleteAccountRequestController = async (req, res) => {
 // @route: PUT / api/v1/user/delete-account-success
 // @access: Private
 
-// export const deleteAccountSuccessController = async (req, res) => {
-//   try {
+export const deleteAccountSuccessController = async (req, res) => {
+  try {
+    const { otp } = req.body;
 
-//   } catch (error) {
-//     return internalServerErrorResponse(res, "Internal Server Error", error?.message);
-//   };
-// };
+    const user = req.user;
+
+    const email = user.email;
+
+    const storedOtp = await getStoredOTP(email, "delete_account");
+
+    if (!storedOtp) {
+      return badRequestResponse(res, "OTP not found");
+    }
+
+    if (storedOtp !== otp) {
+      return badRequestResponse(res, "Invalid OTP");
+    }
+
+    await deleteOTP(email, "delete_account");
+
+    const updateUserData = await userModel.findByIdAndUpdate(
+      user._id,
+      { isDeleted: true },
+      { new: true },
+    );
+
+    if (!updateUserData) {
+      return badRequestResponse(res, "Failed to Delete account");
+    }
+
+    // send an email if account delete successfully
+    try {
+      await getAccountDeletionSuccessEmail(
+        updateUserData.name,
+        updateUserData.email,
+        req.clientInfo,
+      );
+    } catch (error) {
+      return internalServerErrorResponse(
+        res,
+        "Failed to send an email",
+        error?.message,
+      );
+    }
+
+    // clear the cookie immediately
+    res.clearCookie(COOKIE_NAME, cookieOptionsSetting);
+
+    return successResponse(res, "Account Deleted Successfully");
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
 
 // @desc: restore user account request
 // @route: PUT / api/v1/user/restore-account

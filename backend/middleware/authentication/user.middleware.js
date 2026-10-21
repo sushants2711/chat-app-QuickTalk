@@ -203,3 +203,28 @@ export const deleteAccountRequestMiddleware = async (req, res, next) => {
     );
   }
 };
+
+// desc: delete account success middleware
+// @route: POST /api/v1/user/delete-account-success
+// @access: public
+export const deleteAccountSuccessMiddleware = async (req, res, next) => {
+  try {
+    const schema = joi.object({
+      otp: otpSchemaValidation,
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return validationErrorResponse(res, error?.details?.[0]?.message);
+    }
+
+    next();
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
