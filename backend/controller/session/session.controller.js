@@ -5,9 +5,9 @@ import {
   successResponse,
 } from "../../utils/sendResponse/response.handler.js";
 
-// desc - get all session of user
-// route - GET api/v1/session/all-session
-// access - private
+// desc: get all session of user
+// route: GET api/v1/session/all-session
+// access: private
 
 export const getAllSessionController = async (req, res) => {
   try {
@@ -49,9 +49,9 @@ export const getAllSessionController = async (req, res) => {
   }
 };
 
-// desc - get all user session group by country
-// route - GET api/v1/session/session-aggregate
-// access - private
+// desc: get all user session group by country
+// route: GET api/v1/session/session-aggregate
+// access: private
 
 export const getSessionAggregateController = async (req, res) => {
   try {
@@ -108,7 +108,7 @@ export const getSessionAggregateController = async (req, res) => {
   }
 };
 
-// desc - save or update signup session
+// desc: save or update signup session
 // helper function use at the time of signup to store the user location and etc
 
 export const saveOrUpdateSignupSession = async (userId, req) => {

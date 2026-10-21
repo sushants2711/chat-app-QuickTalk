@@ -59,7 +59,7 @@ export const signupController = async (req, res) => {
       // if user exist but it is not verified
       if (!userExist.isVerified) {
         // check the limit first
-        const otpLimitCheck = await checkOTPLimit(email);
+        const otpLimitCheck = await checkOTPLimit(email, "signup");
 
         if (!otpLimitCheck) {
           return badRequestResponse(
@@ -93,10 +93,10 @@ export const signupController = async (req, res) => {
         await saveOrUpdateSignupSession(savedExistingUser._id, req);
 
         // store OTP for 5 minutes
-        await storeOTP(email, otp);
+        await storeOTP(email, otp, "signup");
 
         // increase the OTP count
-        await increaseOTPCount(email);
+        await increaseOTPCount(email, "signup");
 
         // now send a email to user
         try {
@@ -163,10 +163,10 @@ export const signupController = async (req, res) => {
     await saveOrUpdateSignupSession(savedNewUser._id, req);
 
     // store OTP for 5 minutes
-    await storeOTP(email, otp);
+    await storeOTP(email, otp, "signup");
 
     // increase the OTP count
-    await increaseOTPCount(email);
+    await increaseOTPCount(email, "signup");
 
     // now send an otp to the user email
     try {
@@ -320,7 +320,7 @@ export const otpController = async (req, res) => {
     const email = user.email;
 
     // fetch the otp from redis if exist
-    const otpExist = await getStoredOTP(email);
+    const otpExist = await getStoredOTP(email, "signup");
 
     // if otp is not match with stored otp
     if (otpExist !== otp) {
@@ -328,7 +328,7 @@ export const otpController = async (req, res) => {
     }
 
     // delete otp if exist
-    await deleteOTP(email);
+    await deleteOTP(email, "signup");
 
     // update the user isVerified field
     user.isVerified = true;
@@ -426,6 +426,44 @@ export const getCurrentUserController = async (req, res) => {
 // @route: POST /api/v1/user/forgot-password
 // @access: Public
 
+// export const forgotPasswordController = async (req, res) => {
+//   try {
+//     const { email } = req.body;
+
+//     const userExist = await userModel.findOne({ email });
+//   } catch (error) {
+//     return internalServerErrorResponse(
+//       res,
+//       "Internal Server Error",
+//       error?.message,
+//     );
+//   }
+// };
+
 // @desc: reset user password
 // @route: PUT /api/v1/user/reset-password
 // @access: Private
+
+// @desc: change user password
+// @route: PUT / api/v1/user/change-password
+// @access: Private
+
+// @desc: delete user account request
+// @route: PUT / api/v1/user/delete-account
+// @access: Private
+
+// @desc: delete user account request success
+// @route: PUT / api/v1/user/delete-account-success
+// @access: Private
+
+// @desc: restore user account request
+// @route: PUT / api/v1/user/restore-account
+// @access: Private
+
+// @desc: restore user account success
+// @route: PUT / api/v1/user/restore-account-success
+// @access: Private
+
+// @desc: admin signup controller
+// @route: POST / api/v1/user/admin-signup
+// @access: Public
