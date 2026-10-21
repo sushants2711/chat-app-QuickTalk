@@ -2,7 +2,6 @@ import express from "express";
 import {
   changePasswordMiddleware,
   deleteAccountRequestMiddleware,
-  deleteAccountSuccessMiddleware,
   forgotPasswordMiddleware,
   loginMiddleware,
   otpMiddleware,
@@ -10,6 +9,7 @@ import {
   signupMiddleware,
 } from "../../middleware/authentication/user.middleware.js";
 import {
+  adminSignupController,
   changePasswordController,
   deleteAccountRequestController,
   deleteAccountSuccessController,
@@ -67,8 +67,10 @@ userRouter
   .put(
     verifyCookie,
     verifyCookieCredentials,
-    deleteAccountSuccessMiddleware,
+    otpMiddleware,
     deleteAccountSuccessController,
   );
+
+userRouter.route("/admin-signup").post(signupMiddleware, adminSignupController);
 
 export default userRouter;

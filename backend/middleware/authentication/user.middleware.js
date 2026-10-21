@@ -9,9 +9,6 @@ import { emailSchemaValidation } from "../../schemaValidation/email/email.valida
 import { passwordSchemaValidation } from "../../schemaValidation/password/password.validation.js";
 import { otpSchemaValidation } from "../../schemaValidation/otp/otp.validation.js";
 
-// @desc: signup validation middleware
-// @route: POST /api/v1/user/signup
-// @access: public
 export const signupMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
@@ -41,9 +38,6 @@ export const signupMiddleware = async (req, res, next) => {
   }
 };
 
-// desc: login validation middleware
-// @route: POST /api/v1/user/login
-// @access: public
 export const loginMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
@@ -67,9 +61,6 @@ export const loginMiddleware = async (req, res, next) => {
   }
 };
 
-// desc: verify the otp validation middleware
-// @route: POST /api/v1/user/verify-user
-// @access: public
 export const otpMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
@@ -92,9 +83,6 @@ export const otpMiddleware = async (req, res, next) => {
   }
 };
 
-// desc: forgot password
-// @route: POST /api/v1/user/forgot-password
-// @access: public
 export const forgotPasswordMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
@@ -117,9 +105,6 @@ export const forgotPasswordMiddleware = async (req, res, next) => {
   }
 };
 
-// desc: reset password
-// @route: POST /api/v1/user/reset-password
-// @access: public
 export const resetPasswordMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
@@ -148,9 +133,6 @@ export const resetPasswordMiddleware = async (req, res, next) => {
   }
 };
 
-// @desc: change user password
-// @route: PUT / api/v1/user/change-password
-// @access: Private
 export const changePasswordMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
@@ -179,38 +161,10 @@ export const changePasswordMiddleware = async (req, res, next) => {
   }
 };
 
-// @desc: delete user account request
-// @route: PUT / api/v1/user/delete-account
-// @access: Private
 export const deleteAccountRequestMiddleware = async (req, res, next) => {
   try {
     const schema = joi.object({
       password: passwordSchemaValidation,
-    });
-
-    const { error } = schema.validate(req.body);
-
-    if (error) {
-      return validationErrorResponse(res, error?.details?.[0]?.message);
-    }
-
-    next();
-  } catch (error) {
-    return internalServerErrorResponse(
-      res,
-      "Internal Server Error",
-      error?.message,
-    );
-  }
-};
-
-// desc: delete account success middleware
-// @route: POST /api/v1/user/delete-account-success
-// @access: public
-export const deleteAccountSuccessMiddleware = async (req, res, next) => {
-  try {
-    const schema = joi.object({
-      otp: otpSchemaValidation,
     });
 
     const { error } = schema.validate(req.body);
