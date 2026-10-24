@@ -665,6 +665,7 @@ export const changePasswordController = async (req, res) => {
 // @access: Private
 
 export const deleteAccountRequestController = async (req, res) => {
+  // delete accout also check and delete the profile model so no one see any profile on anyone and also not show anything
   try {
     const { password } = req.body;
 
@@ -798,6 +799,7 @@ export const deleteAccountSuccessController = async (req, res) => {
 // @access: Private
 
 export const restoreAccountRequestController = async (req, res) => {
+  // for restore the account at the same time profile model modify so profile is visible
   try {
     const { email } = req.body;
 
