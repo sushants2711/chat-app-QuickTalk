@@ -32,7 +32,6 @@
 //     }
 // }
 
-
 // export const deleteProfilePictureController = async (req, res) => {
 //     try {
 
