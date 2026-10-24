@@ -18,14 +18,14 @@ export const signupMiddleware = async (req, res, next) => {
       confirmPassword: passwordSchemaValidation,
     });
 
-    if (req.body.password !== req.body.confirmPassword) {
-      return badRequestResponse(res, "Password mismatch");
-    }
-
     const { error } = schema.validate(req.body);
 
     if (error) {
       return validationErrorResponse(res, error?.details?.[0]?.message);
+    }
+
+    if (req.body.password !== req.body.confirmPassword) {
+      return badRequestResponse(res, "Password mismatch");
     }
 
     next();
@@ -113,14 +113,14 @@ export const resetPasswordMiddleware = async (req, res, next) => {
       confirmPassword: passwordSchemaValidation,
     });
 
-    if (req.body.password !== req.body.confirmPassword) {
-      return badRequestResponse(res, "Password mismatch");
-    }
-
     const { error } = schema.validate(req.body);
 
     if (error) {
       return validationErrorResponse(res, error?.details?.[0]?.message);
+    }
+
+    if (req.body.password !== req.body.confirmPassword) {
+      return badRequestResponse(res, "Password mismatch");
     }
 
     next();
@@ -141,14 +141,14 @@ export const changePasswordMiddleware = async (req, res, next) => {
       confirmPassword: passwordSchemaValidation,
     });
 
-    if (req.body.newPassword !== req.body.confirmPassword) {
-      return badRequestResponse(res, "Password mismatch");
-    }
-
     const { error } = schema.validate(req.body);
 
     if (error) {
       return validationErrorResponse(res, error?.details?.[0]?.message);
+    }
+
+    if (req.body.newPassword !== req.body.confirmPassword) {
+      return badRequestResponse(res, "Password mismatch");
     }
 
     next();
