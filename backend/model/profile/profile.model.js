@@ -13,12 +13,13 @@ const profileSchema = new mongoose.Schema(
       required: true,
       trim: true,
       unique: true,
-      minlength: 3,
+      minlength: 5,
       maxlength: 30,
     },
     gender: {
       type: String,
       enum: ["M", "F", "O"],
+      required: true,
     },
     bio: {
       type: String,
@@ -27,7 +28,7 @@ const profileSchema = new mongoose.Schema(
     },
     profilePictureUrl: {
       type: String,
-      default: "",
+      default: null,
     },
     profilePictureId: {
       type: String,
@@ -35,18 +36,7 @@ const profileSchema = new mongoose.Schema(
     },
     dob: {
       type: Date,
-    },
-    city: {
-      type: String,
-      default: "",
-    },
-    state: {
-      type: String,
-      default: "",
-    },
-    country: {
-      type: String,
-      default: "",
+      default: null,
     },
   },
   { timestamps: true, minimize: true },
