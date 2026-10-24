@@ -632,9 +632,9 @@ export const changePasswordController = async (req, res) => {
       return badRequestResponse(res, "Invalid Current Password");
     }
 
-    const hashPassword = await hashPassword(newPassword);
+    const hashThePassword = await hashPassword(newPassword);
 
-    userExist.password = hashPassword;
+    userExist.password = hashThePassword;
 
     const savedData = await userExist.save();
 
