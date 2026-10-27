@@ -1,3 +1,4 @@
+import cloudinary from "../../config/cloudinary/cloudinary.config.js";
 import profileModel from "../../model/profile/profile.model.js";
 import {
   badRequestResponse,
@@ -5,7 +6,6 @@ import {
   internalServerErrorResponse,
   notFoundResponse,
   successResponse,
-  unauthorizedResponse,
 } from "../../utils/sendResponse/response.handler.js";
 
 // @desc: create profile for the user
@@ -18,6 +18,30 @@ export const createProfileController = async (req, res) => {
     const user = req.user;
 
     const { username, gender, bio, dob } = req.body;
+
+    const profileExist = await profileModel.findOne({ userId: user?._id });
+
+    if (profileExist) {
+      // update the profile
+      const updateProfile = {
+        username: username ?? profileExist.username,
+        gender: gender ?? profileExist.gender,
+        bio: bio ?? profileExist.bio,
+        dob: dob ? new Date(dob) : profileExist.dob,
+      };
+
+      const updatedProfile = await profileModel.findByIdAndUpdate(
+        profileExist._id,
+        updateProfile,
+        { new: true },
+      );
+
+      return successResponse(
+        res,
+        "Profile Updated Successfully",
+        updatedProfile,
+      );
+    }
 
     const newProfile = new profileModel({
       username,
@@ -73,25 +97,20 @@ export const getMyProfileController = async (req, res) => {
 };
 
 // @desc: update profile for the user
-// @route: PUT /api/v1/profile/update-profile/:id
+// @route: PUT /api/v1/profile/update-profile
 // @access: private
 
 // not accept the image here only update the text field
 export const updateProfileController = async (req, res) => {
   try {
-    const { id } = req.params;
     const user = req.user;
 
     const { username, gender, bio, dob } = req.body;
 
-    const profileExist = await profileModel.findById(id);
+    const profileExist = await profileModel.findOne({ userId: user?._id });
 
     if (!profileExist) {
       return notFoundResponse(res, "Profile not found");
-    }
-
-    if (profileExist.userId.toString() !== user?._id.toString()) {
-      return unauthorizedResponse(res, "Unauthorized user");
     }
 
     const profileUpdate = {
@@ -102,7 +121,7 @@ export const updateProfileController = async (req, res) => {
     };
 
     const updateProfile = await profileModel.findByIdAndUpdate(
-      id,
+      profileExist?._id,
       profileUpdate,
       { new: true },
     );
@@ -121,18 +140,149 @@ export const updateProfileController = async (req, res) => {
   }
 };
 
-// export const addOrUpdateProfilePictureController = async (req, res) => {
-//     try {
+// @desc: add or update profile picture for the user
+// @route: PUT /api/v1/profile/add-update-profile
+// @access: private
 
-//     } catch (error) {
+export const addOrUpdateProfilePictureController = async (req, res) => {
+  try {
+    const image = req.file;
+    const user = req.user;
 
-//     }
-// }
+    if (!image) {
+      return badRequestResponse(res, "profile image not exist");
+    }
 
-// export const deleteProfilePictureController = async (req, res) => {
-//     try {
+    const profileExist = await profileModel.findOne({ userId: user?._id });
 
-//     } catch (error) {
+    // if profile exist than update the profile picture
+    if (profileExist) {
+      // if profile already have the profile picture than delete the old profile picture
+      if (profileExist.profilePictureId) {
+        const oldImage = profileExist.profilePictureUrl;
+        const oldId = profileExist.profilePictureId;
 
-//     }
-// }
+        const deleteImage = await cloudinary.uploader.destroy(
+          profileExist.profilePictureId,
+        );
+
+        if (deleteImage?.result !== "ok") {
+          // delete the current upload image from cloudinary
+          await cloudinary.uploader.destroy(image?.public_id);
+          // save the old image and id again
+          profileExist.profilePictureUrl = oldImage;
+          profileExist.profilePictureId = oldId;
+
+          await profileExist.save();
+
+          return badRequestResponse(res, "profile picture not updated");
+        }
+        // update the profile pic and save
+        profileExist.profilePictureUrl = image?.secure_url;
+        profileExist.profilePictureId = image?.public_id;
+
+        const updatedProfile = await profileExist.save();
+
+        if (!updatedProfile) {
+          await cloudinary.uploader.destroy(image?.public_id);
+          return badRequestResponse(res, "profile picture not updated");
+        }
+        return successResponse(
+          res,
+          "profile picture updated successfully",
+          updatedProfile,
+        );
+      }
+
+      // if profile url or id is not exist in database than simply save it in db
+      profileExist.profilePictureId = image?.public_id;
+      profileExist.profilePictureUrl = image?.secure_url;
+
+      const updatedProfile = await profileExist.save();
+
+      if (!updatedProfile) {
+        await cloudinary.uploader.destroy(image?.public_id);
+        return badRequestResponse(res, "profile picture not updated");
+      }
+      return successResponse(
+        res,
+        "profile picture updated successfully",
+        updatedProfile,
+      );
+    }
+
+    // if profile not exist than create the profile picture
+    const newProfile = new profileModel({
+      userId: user?._id,
+      profilePictureUrl: image?.secure_url,
+      profilePictureId: image?.public_id,
+    });
+
+    const savedProfile = await newProfile.save();
+
+    if (!savedProfile) {
+      await cloudinary.uploader.destroy(image?.public_id);
+      return badRequestResponse(res, "profile picture not created");
+    }
+
+    return successResponse(
+      res,
+      "profile picture created successfully",
+      savedProfile,
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
+
+// @desc: delete profile picture for the user
+// @route: DELETE /api/v1/profile/delete-profile
+// @access: private
+
+export const deleteProfilePictureController = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const profileExist = await profileModel.findOne({ userId: user?._id });
+
+    if (!profileExist) {
+      return notFoundResponse(res, "Profile not exist");
+    }
+
+    if (!profileExist?.profilePictureId) {
+      return notFoundResponse(res, "Profile picture not exist");
+    }
+
+    const deleteImage = await cloudinary.uploader.destroy(
+      profileExist?.profilePictureId,
+    );
+
+    if (deleteImage?.result !== "ok") {
+      return badRequestResponse(res, "please try again!");
+    }
+
+    profileExist.profilePictureUrl = null;
+    profileExist.profilePictureId = null;
+
+    const updatedProfile = await profileExist.save();
+
+    if (!updatedProfile) {
+      return badRequestResponse(res, "please try again");
+    }
+    return successResponse(
+      res,
+      "Profile picture deleted successfully",
+      updatedProfile,
+    );
+  } catch (error) {
+    return internalServerErrorResponse(
+      res,
+      "Internal Server Error",
+      error?.message,
+    );
+  }
+};
