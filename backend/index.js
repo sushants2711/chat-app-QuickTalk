@@ -13,6 +13,7 @@ import { requestLogger } from "./middleware/logger/request.logger.js";
 import { setupSwaggerDocs } from "./utils/swaggerApiDocs/swaggerDocuments/swagger.docs.js";
 import userRouter from "./router/authentication/user.router.js";
 import sessionRouter from "./router/session/session.router.js";
+import profileRouter from "./router/profile/profile.router.js";
 
 // dotenv config
 dotenv.config();
@@ -96,6 +97,7 @@ app.get("/", (req, res) => {
 // api end points
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/session", sessionRouter);
+app.use("/api/v1/profile", profileRouter);
 
 // server start
 app.listen(PORTNUMBER, () => {

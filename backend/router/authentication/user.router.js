@@ -78,7 +78,6 @@ userRouter
 userRouter
   .route("/restore-account-success")
   .put(verifyCookie, otpMiddleware, restoreAccountSuccessController);
-
 userRouter.route("/admin-signup").post(signupMiddleware, adminSignupController);
 
 export default userRouter;
