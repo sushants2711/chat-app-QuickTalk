@@ -178,13 +178,13 @@ export const addOrUpdateProfilePictureController = async (req, res) => {
           return badRequestResponse(res, "profile picture not updated");
         }
         // update the profile pic and save
-        profileExist.profilePictureUrl = image?.secure_url;
-        profileExist.profilePictureId = image?.public_id;
+        profileExist.profilePictureUrl = image?.path;
+        profileExist.profilePictureId = image?.filename;
 
         const updatedProfile = await profileExist.save();
 
         if (!updatedProfile) {
-          await cloudinary.uploader.destroy(image?.public_id);
+          await cloudinary.uploader.destroy(image?.filename);
           return badRequestResponse(res, "profile picture not updated");
         }
         return successResponse(
@@ -195,13 +195,13 @@ export const addOrUpdateProfilePictureController = async (req, res) => {
       }
 
       // if profile url or id is not exist in database than simply save it in db
-      profileExist.profilePictureId = image?.public_id;
-      profileExist.profilePictureUrl = image?.secure_url;
+      profileExist.profilePictureId = image?.filename;
+      profileExist.profilePictureUrl = image?.path;
 
       const updatedProfile = await profileExist.save();
 
       if (!updatedProfile) {
-        await cloudinary.uploader.destroy(image?.public_id);
+        await cloudinary.uploader.destroy(image?.filename);
         return badRequestResponse(res, "profile picture not updated");
       }
       return successResponse(
@@ -214,14 +214,14 @@ export const addOrUpdateProfilePictureController = async (req, res) => {
     // if profile not exist than create the profile picture
     const newProfile = new profileModel({
       userId: user?._id,
-      profilePictureUrl: image?.secure_url,
-      profilePictureId: image?.public_id,
+      profilePictureUrl: image?.path,
+      profilePictureId: image?.filename,
     });
 
     const savedProfile = await newProfile.save();
 
     if (!savedProfile) {
-      await cloudinary.uploader.destroy(image?.public_id);
+      await cloudinary.uploader.destroy(image?.filename);
       return badRequestResponse(res, "profile picture not created");
     }
 
