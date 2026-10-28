@@ -24,9 +24,9 @@ export const createProfileController = async (req, res) => {
     if (profileExist) {
       // update the profile
       const updateProfile = {
-        username: username ?? profileExist.username,
-        gender: gender ?? profileExist.gender,
-        bio: bio ?? profileExist.bio,
+        username: username || profileExist.username,
+        gender: gender || profileExist.gender,
+        bio: bio || profileExist.bio,
         dob: dob ? new Date(dob) : profileExist.dob,
       };
 
@@ -114,9 +114,9 @@ export const updateProfileController = async (req, res) => {
     }
 
     const profileUpdate = {
-      username: username ?? profileExist.username,
-      gender: gender ?? profileExist.gender,
-      bio: bio ?? profileExist.bio,
+      username: username || profileExist.username,
+      gender: gender || profileExist.gender,
+      bio: bio || profileExist.bio,
       dob: dob ? new Date(dob) : profileExist.dob,
     };
 

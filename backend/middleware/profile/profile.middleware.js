@@ -13,9 +13,11 @@ export const createProfileMiddleware = async (req, res, next) => {
     const schema = joi.object({
       username: usernameSchemaValidation.required().messages({
         "any.required": "Username is required",
+        "string.empty": "Username is required",
       }),
       gender: genderSchemaValidation.required().messages({
         "any.required": "Gender is required",
+        "string.empty": "Gender is required",
       }),
       bio: bioSchemaValidation,
       dob: dobSchemaValidation,
